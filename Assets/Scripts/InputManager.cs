@@ -14,31 +14,27 @@ public class InputManager : MonoBehaviour
 
     private void Awake()
     {
-        playerInput = new PlayerInputActions();
-        displacement = playerInput.Player;
-        motor = GetComponent<PlayerMotor>();
-        look = GetComponent<PlayerLook>();
-        displacement.Jump.performed += ctx => motor.Jump();
+        _playerInput = new PlayerInputActions();
+        _displacement = _playerInput.Player;
+        _motor = GetComponent<PlayerMotor>();
+        _displacement.Jump.performed += ctx => _motor.Jump();
+        _displacement.Sprint.performed += ctx => _motor.Sprint();
+        _displacement.Sprint.canceled += ctx => _motor.NoSprint();
     }
 
     private void FixedUpdate()
     {
-        motor.ProcessMove(displacement.Movement.ReadValue<Vector2>());
-    }
-
-    private void LateUpdate()
-    {
-        look.ProcessLook(displacement.Look.ReadValue<Vector2>());
+        _motor.ProcessMove(_displacement.Movement.ReadValue<Vector2>());
     }
 
     private void OnEnable()
     {
-        displacement.Enable();
+        _displacement.Enable();
     }
 
     private void OnDisable()
     {
-        displacement.Disable();
+        _displacement.Disable();
     }
 
     #endregion
@@ -51,10 +47,9 @@ public class InputManager : MonoBehaviour
 
     #region Private & Protected
 
-    private PlayerInputActions playerInput;
-    private PlayerInputActions.PlayerActions displacement;
-    private PlayerMotor motor;
-    private PlayerLook look;
+    private PlayerInputActions _playerInput;
+    private PlayerInputActions.PlayerActions _displacement;
+    private PlayerMotor _motor;
 
     #endregion
 }

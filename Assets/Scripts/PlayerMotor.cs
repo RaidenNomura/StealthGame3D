@@ -6,22 +6,30 @@ public class PlayerMotor : MonoBehaviour
 {
     #region Exposed
 
-    [SerializeField] float speed = 5f;
-    [SerializeField] float gravity = -9.8f;
-    [SerializeField] float jumpHeight = 3f;
+    [SerializeField] Transform cam;
+    [SerializeField] float _speed = 5f;
+    [SerializeField] float _sprint = 1f;
+    [SerializeField] float _gravity = -9.8f;
+    [SerializeField] float _jumpHeight = 3f;
+    [SerializeField] float _turnSmoothTime = 0.1f;
 
     #endregion
 
     #region Unity Lifecycle
 
+    private void Awake()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
     private void Start()
     {
-        controller = GetComponent<CharacterController>();
+        _controller = GetComponent<CharacterController>();
     }
 
     private void Update()
     {
-        isGrounded = controller.isGrounded;
+        _isGrounded = _controller.isGrounded;
     }
 
     #endregion
@@ -30,30 +38,50 @@ public class PlayerMotor : MonoBehaviour
 
     public void ProcessMove(Vector2 input)
     {
-        Vector3 moveDirection = Vector3.zero;
-        moveDirection.x = input.x;
-        moveDirection.z = input.y;
+        Vector3 direction = Vector3.zero;
+        direction.x = input.x;
+        direction.z = input.y;
 
-        controller.Move(transform.TransformDirection(moveDirection) * speed * Time.deltaTime);
-        playerVelocity.y += gravity * Time.deltaTime;
-        if (isGrounded && playerVelocity.y < 0)
-            playerVelocity.y = -2f;
-        controller.Move(playerVelocity * Time.deltaTime);
+        if (direction.magnitude >= 0.1f)
+        {
+            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
+            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref _turnSmoothVelocity, _turnSmoothTime);
+            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+
+            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+            _controller.Move(moveDir.normalized * _speed * _sprint * Time.deltaTime);
+        }
+
+        _playerVelocity.y += _gravity * Time.deltaTime;
+        if (_isGrounded && _playerVelocity.y < 0)
+            _playerVelocity.y = -2f;
+        _controller.Move(_playerVelocity * Time.deltaTime);
     }
 
     public void Jump()
     {
-        if (isGrounded)
-            playerVelocity.y = Mathf.Sqrt(jumpHeight * -3 * gravity);
+        if (_isGrounded)
+            _playerVelocity.y = Mathf.Sqrt(_jumpHeight * -3 * _gravity);
+    }
+
+    public void Sprint()
+    {
+        _sprint = 2;
+    }
+
+    public void NoSprint()
+    {
+        _sprint = 1;
     }
 
     #endregion
 
     #region Private & Protected
 
-    private CharacterController controller;
-    private Vector3 playerVelocity;
-    private bool isGrounded;
+    private CharacterController _controller;
+    private Vector3 _playerVelocity;
+    private bool _isGrounded;
+    private float _turnSmoothVelocity;
 
     #endregion
 }
