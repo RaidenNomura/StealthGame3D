@@ -8,7 +8,7 @@ public class PlayerMotor : MonoBehaviour
 
     [SerializeField] Transform cam;
     [SerializeField] float _speed = 5f;
-    [SerializeField] float _sprint = 1f;
+    [SerializeField] float _sprint = 2f;
     [SerializeField] float _gravity = -9.8f;
     [SerializeField] float _jumpHeight = 3f;
     [SerializeField] float _turnSmoothTime = 0.1f;
@@ -30,6 +30,22 @@ public class PlayerMotor : MonoBehaviour
     private void Update()
     {
         _isGrounded = _controller.isGrounded;
+        if (lerpCrouch)
+        {
+            crouchTimer += Time.deltaTime;
+            float p = crouchTimer / 1;
+            p *= p;
+            if (crouching)
+                _controller.height = Mathf.Lerp(_controller.height, 1, p);
+            else
+                _controller.height = Mathf.Lerp(_controller.height, 2, p);
+
+            if (p > 1)
+            {
+                lerpCrouch = false;
+                crouchTimer = 0f;
+            }
+        }
     }
 
     #endregion
@@ -38,9 +54,9 @@ public class PlayerMotor : MonoBehaviour
 
     public void ProcessMove(Vector2 input)
     {
-        Vector3 direction = Vector3.zero;
-        direction.x = input.x;
-        direction.z = input.y;
+        float horizontal = input.x;
+        float vertical = input.y;
+        Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
 
         if (direction.magnitude >= 0.1f)
         {
@@ -49,7 +65,7 @@ public class PlayerMotor : MonoBehaviour
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
             Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            _controller.Move(moveDir.normalized * _speed * _sprint * Time.deltaTime);
+            _controller.Move(moveDir.normalized * _speed * Time.deltaTime);
         }
 
         _playerVelocity.y += _gravity * Time.deltaTime;
@@ -64,14 +80,20 @@ public class PlayerMotor : MonoBehaviour
             _playerVelocity.y = Mathf.Sqrt(_jumpHeight * -3 * _gravity);
     }
 
-    public void Sprint()
+    public void Sneak()
     {
-        _sprint = 2;
+        crouching = !crouching;
+        crouchTimer = 0;
+        lerpCrouch = true;
     }
 
-    public void NoSprint()
+    public void Sprint()
     {
-        _sprint = 1;
+        _sprinting = !_sprinting;
+        if (_sprinting)
+            _speed += _sprint;
+        else
+            _speed -= _sprint;
     }
 
     #endregion
@@ -82,6 +104,11 @@ public class PlayerMotor : MonoBehaviour
     private Vector3 _playerVelocity;
     private bool _isGrounded;
     private float _turnSmoothVelocity;
+
+    private bool _sprinting;
+    private bool crouching;
+    private bool lerpCrouch;
+    private float crouchTimer;
 
     #endregion
 }

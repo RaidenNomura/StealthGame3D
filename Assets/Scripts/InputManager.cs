@@ -18,8 +18,8 @@ public class InputManager : MonoBehaviour
         _displacement = _playerInput.Player;
         _motor = GetComponent<PlayerMotor>();
         _displacement.Jump.performed += ctx => _motor.Jump();
+        _displacement.Sneak.performed += ctx => _motor.Sneak();
         _displacement.Sprint.performed += ctx => _motor.Sprint();
-        _displacement.Sprint.canceled += ctx => _motor.NoSprint();
     }
 
     private void FixedUpdate()
