@@ -20,6 +20,7 @@ public class PlayerMotor : MonoBehaviour
     private void Awake()
     {
         Cursor.lockState = CursorLockMode.Locked;
+        _animator = GetComponentInChildren<Animator>();
     }
 
     private void Start()
@@ -67,7 +68,12 @@ public class PlayerMotor : MonoBehaviour
             Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
             _controller.Move(moveDir.normalized * _speed * Time.deltaTime);
         }
-
+        /*
+        if (_playerVelocity.x < 0.1f)
+            _animator.SetFloat("_movement", 1f);
+        else
+            _animator.SetFloat("_movement", 0f);
+        */
         _playerVelocity.y += _gravity * Time.deltaTime;
         if (_isGrounded && _playerVelocity.y < 0)
             _playerVelocity.y = -2f;
@@ -77,7 +83,10 @@ public class PlayerMotor : MonoBehaviour
     public void Jump()
     {
         if (_isGrounded)
+        {
+            _animator.SetTrigger("_jumping");
             _playerVelocity.y = Mathf.Sqrt(_jumpHeight * -3 * _gravity);
+        }
     }
 
     public void Sneak()
@@ -91,9 +100,15 @@ public class PlayerMotor : MonoBehaviour
     {
         _sprinting = !_sprinting;
         if (_sprinting)
+        {
             _speed += _sprint;
+            _animator.SetBool("isRunning", true);
+        }
         else
+        {
             _speed -= _sprint;
+            _animator.SetBool("isRunning", false);
+        }
     }
 
     #endregion
@@ -109,6 +124,8 @@ public class PlayerMotor : MonoBehaviour
     private bool crouching;
     private bool lerpCrouch;
     private float crouchTimer;
+
+    private Animator _animator;
 
     #endregion
 }
