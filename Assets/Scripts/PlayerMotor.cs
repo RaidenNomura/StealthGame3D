@@ -37,9 +37,15 @@ public class PlayerMotor : MonoBehaviour
             float p = crouchTimer / 1;
             p *= p;
             if (crouching)
-                _controller.height = Mathf.Lerp(_controller.height, 1, p);
+            {
+                _animator.SetBool("isSneaking", true);
+                //_controller.height = Mathf.Lerp(_controller.height, 1, p);
+            }
             else
-                _controller.height = Mathf.Lerp(_controller.height, 2, p);
+            {
+                _animator.SetBool("isSneaking", false);
+                //_controller.height = Mathf.Lerp(_controller.height, 2, p);
+            }
 
             if (p > 1)
             {
@@ -61,6 +67,8 @@ public class PlayerMotor : MonoBehaviour
 
         if (direction.magnitude >= 0.1f)
         {
+            _animator.SetBool("isJogging", true);
+
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref _turnSmoothVelocity, _turnSmoothTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
@@ -68,12 +76,9 @@ public class PlayerMotor : MonoBehaviour
             Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
             _controller.Move(moveDir.normalized * _speed * Time.deltaTime);
         }
-        /*
-        if (_playerVelocity.x < 0.1f)
-            _animator.SetFloat("_movement", 1f);
         else
-            _animator.SetFloat("_movement", 0f);
-        */
+            _animator.SetBool("isJogging", false);
+
         _playerVelocity.y += _gravity * Time.deltaTime;
         if (_isGrounded && _playerVelocity.y < 0)
             _playerVelocity.y = -2f;
