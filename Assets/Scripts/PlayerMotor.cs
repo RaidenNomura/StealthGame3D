@@ -31,6 +31,7 @@ public class PlayerMotor : MonoBehaviour
     private void Update()
     {
         _isGrounded = _controller.isGrounded;
+        /*
         if (lerpCrouch)
         {
             crouchTimer += Time.deltaTime;
@@ -53,6 +54,7 @@ public class PlayerMotor : MonoBehaviour
                 crouchTimer = 0f;
             }
         }
+        */
     }
 
     #endregion
@@ -96,9 +98,22 @@ public class PlayerMotor : MonoBehaviour
 
     public void Sneak()
     {
+        /*
         crouching = !crouching;
         crouchTimer = 0;
         lerpCrouch = true;
+        */
+        crouching = !crouching;
+        if (crouching)
+        {
+            _speed -= 1;
+            _animator.SetBool("isSneaking", true);
+        }
+        else
+        {
+            _speed += 1;
+            _animator.SetBool("isSneaking", false);
+        }
     }
 
     public void Sprint()
