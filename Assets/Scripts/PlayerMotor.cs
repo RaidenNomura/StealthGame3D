@@ -106,12 +106,12 @@ public class PlayerMotor : MonoBehaviour
         crouching = !crouching;
         if (crouching)
         {
-            _speed -= 1;
+            _speed -= 5;
             _animator.SetBool("isSneaking", true);
         }
         else
         {
-            _speed += 1;
+            _speed += 5;
             _animator.SetBool("isSneaking", false);
         }
     }
