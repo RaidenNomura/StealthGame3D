@@ -115,6 +115,8 @@ MonoBehaviour:
   speed: 5
   waitTime: 0.3
   turnSpeed: 90
+  spotlight: {fileID: 0}
+  ViewDistance: 11
   pathHolder: {fileID: 0}
 --- !u!1 &3028474828580040712
 GameObject:

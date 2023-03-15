@@ -10,6 +10,10 @@ public class Guard : MonoBehaviour
     [SerializeField] float waitTime = 0.3f;
     [SerializeField] float turnSpeed = 90f;
 
+    [SerializeField] Light spotlight;
+    [SerializeField] float ViewDistance  = 11;
+    [SerializeField] LayerMask viewMask;
+
     [SerializeField] Transform pathHolder;
 
     #endregion
@@ -18,8 +22,11 @@ public class Guard : MonoBehaviour
 
     private void Start()
     {
-        Vector3[] waypoint = new Vector3[pathHolder.childCount];
+        player = GameObject.FindGameObjectWithTag("PLayer").transform;
+        viewAngle = spotlight.spotAngle;
+        originalSpotlightColor = spotlight.color;
 
+        Vector3[] waypoint = new Vector3[pathHolder.childCount];
         for (int i = 0; i < waypoint.Length; i++)
         {
             waypoint[i] = pathHolder.GetChild(i).position;
@@ -31,7 +38,15 @@ public class Guard : MonoBehaviour
 
     private void Update()
     {
-
+        if (CanSeePlayer())
+        {
+            Debug.Log("tot");
+            spotlight.color = Color.red;
+        }
+        else
+        {
+            spotlight.color = originalSpotlightColor;
+        }
     }
 
     private void OnDrawGizmos()
@@ -46,6 +61,9 @@ public class Guard : MonoBehaviour
             previousPosition = waypoint.position;
         }
         Gizmos.DrawLine(previousPosition, startPosition);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawRay(transform.position, transform.forward * ViewDistance);
     }
 
     #endregion
@@ -87,11 +105,30 @@ public class Guard : MonoBehaviour
         }
     }
 
+    bool CanSeePlayer()
+    {
+        if (Vector3.Distance(transform.position, player.position) < ViewDistance)
+        {
+            Vector3 dirToPlayer = (player.position - transform.position).normalized;
+            float angleBetweenGuardAndPlayer = Vector3.Angle (transform.forward, dirToPlayer);
+            if (angleBetweenGuardAndPlayer < viewAngle / 2f)
+            {
+                if (Physics.Linecast(transform.position, player.position, viewMask))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     #endregion
 
     #region Private & Protected
 
-
+    private float viewAngle;
+    private Transform player;
+    private Color originalSpotlightColor;
 
     #endregion
 }
