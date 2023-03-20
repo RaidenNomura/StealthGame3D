@@ -6,12 +6,15 @@ public class Guard : MonoBehaviour
 {
     #region Exposed
 
+    public static event System.Action OnGuardHasSpottedPlayer;
+
     [SerializeField] float speed = 5f;
     [SerializeField] float waitTime = 0.3f;
     [SerializeField] float turnSpeed = 90f;
+    [SerializeField] float timeToSpotPlayer = 0.5f;
 
     [SerializeField] Light spotlight;
-    [SerializeField] float ViewDistance  = 11;
+    [SerializeField] float ViewDistance = 11;
     [SerializeField] LayerMask viewMask;
 
     [SerializeField] Transform pathHolder;
@@ -22,7 +25,7 @@ public class Guard : MonoBehaviour
 
     private void Start()
     {
-        player = GameObject.FindGameObjectWithTag("PLayer").transform;
+        player = GameObject.FindGameObjectWithTag("Player").transform;
         viewAngle = spotlight.spotAngle;
         originalSpotlightColor = spotlight.color;
 
@@ -40,12 +43,24 @@ public class Guard : MonoBehaviour
     {
         if (CanSeePlayer())
         {
-            Debug.Log("tot");
-            spotlight.color = Color.red;
+            playerVisibleTimer += Time.deltaTime;
         }
         else
         {
-            spotlight.color = originalSpotlightColor;
+            playerVisibleTimer -= Time.deltaTime;
+        }
+        playerVisibleTimer = Mathf.Clamp(playerVisibleTimer, 0, timeToSpotPlayer);
+        spotlight.color = Color.Lerp(originalSpotlightColor, Color.red, playerVisibleTimer / timeToSpotPlayer);
+
+        if (spotlight.color == Color.red)
+            _lose = true;
+
+        if (playerVisibleTimer > timeToSpotPlayer)
+        {
+            if (OnGuardHasSpottedPlayer != null)
+            {
+                OnGuardHasSpottedPlayer();
+            }
         }
     }
 
@@ -110,10 +125,10 @@ public class Guard : MonoBehaviour
         if (Vector3.Distance(transform.position, player.position) < ViewDistance)
         {
             Vector3 dirToPlayer = (player.position - transform.position).normalized;
-            float angleBetweenGuardAndPlayer = Vector3.Angle (transform.forward, dirToPlayer);
+            float angleBetweenGuardAndPlayer = Vector3.Angle(transform.forward, dirToPlayer);
             if (angleBetweenGuardAndPlayer < viewAngle / 2f)
             {
-                if (Physics.Linecast(transform.position, player.position, viewMask))
+                if (!Physics.Linecast(transform.position, player.position, viewMask))
                 {
                     return true;
                 }
@@ -127,8 +142,12 @@ public class Guard : MonoBehaviour
     #region Private & Protected
 
     private float viewAngle;
+    private float playerVisibleTimer;
+
     private Transform player;
     private Color originalSpotlightColor;
+
+    public bool _lose;
 
     #endregion
 }

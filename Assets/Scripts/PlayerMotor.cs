@@ -57,6 +57,14 @@ public class PlayerMotor : MonoBehaviour
         */
     }
 
+    void OnControllerColliderHit(ControllerColliderHit hitCollider)
+    {
+        if (hitCollider.gameObject.CompareTag("Finish"))
+        {
+            _win = true;
+        }
+    }
+
     #endregion
 
     #region Methods
@@ -146,6 +154,8 @@ public class PlayerMotor : MonoBehaviour
     private float crouchTimer;
 
     private Animator _animator;
+
+    public bool _win;
 
     #endregion
 }
